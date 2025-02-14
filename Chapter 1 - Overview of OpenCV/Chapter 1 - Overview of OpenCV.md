@@ -2,7 +2,7 @@
 
 ### **Chapter 1: Overview of OpenCV**  
 
-This chapter introduces OpenCV, its history, capabilities, and installation. Below is a detailed breakdown:
+This chapter introduces OpenCV, its history, capabilities, and installation.
 
 ---
 
