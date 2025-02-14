@@ -1,3 +1,5 @@
+---
+
 ### **Chapter 2: Introduction to OpenCV**  
 
 This chapter focuses on setting up OpenCV, writing basic programs, handling images and videos, and understanding some fundamental transformations.
@@ -8,20 +10,17 @@ This chapter focuses on setting up OpenCV, writing basic programs, handling imag
 After installing OpenCV, the first step is to set up the programming environment and write simple programs.  
 
 - **Required Libraries** (to be linked in your project):  
-  - `highgui.lib` (GUI & file handling)  
-  - `cxcore.lib` (Core OpenCV functions)  
-  - `ml.lib` (Machine Learning)  
-  - `cv.lib` (Computer Vision)  
+  - `opencv_core.lib` (Core OpenCV functions)  
+  - `opencv_highgui.lib` (GUI & file handling)  
+  - `opencv_imgproc.lib` (Image processing functions)  
+  - `opencv_videoio.lib` (Video I/O operations)  
 
 - **Include Directories Required:**  
   ```
-  C:/Program Files/OpenCV/include
-  C:/Program Files/OpenCV/cxcore/include
-  C:/Program Files/OpenCV/ml/include
-  C:/Program Files/OpenCV/otherlibs/highgui
+  C:/opencv/build/include
   ```
 
-**💡 Memory Trick:** Remember **"HCM-CV"** → **H**ighGUI, **C**XCore, **M**L, **C**V  
+**💡 Memory Trick:** Remember **"CHIV"** → **C**ore, **H**ighGUI, **I**mgproc, **V**ideoIO  
 
 ---
 
@@ -29,28 +28,37 @@ After installing OpenCV, the first step is to set up the programming environment
 ### **Goal:** Load an image from disk and display it.  
 
 ```cpp
-#include "highgui.h"
+#include <opencv2/opencv.hpp>
+#include <iostream>
 
 int main(int argc, char** argv) {
-    IplImage* img = cvLoadImage(argv[1]);  // Load image
-    cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);  // Create window
-    cvShowImage("Example1", img);  // Show image
-    cvWaitKey(0);  // Wait for key press
-    cvReleaseImage(&img);  // Release image memory
-    cvDestroyWindow("Example1");  // Destroy window
+    if (argc != 2) {
+        std::cout << "Usage: ./display_image <image_path>\n";
+        return -1;
+    }
+
+    cv::Mat img = cv::imread(argv[1]);  // Load image
+    if (img.empty()) {
+        std::cout << "Could not open or find the image!\n";
+        return -1;
+    }
+
+    cv::namedWindow("Example1", cv::WINDOW_AUTOSIZE);  // Create window
+    cv::imshow("Example1", img);  // Show image
+    cv::waitKey(0);  // Wait for key press
+    cv::destroyWindow("Example1");  // Destroy window
     return 0;
 }
 ```
 
 ### **Breakdown of the Code:**  
-- **`cvLoadImage(argv[1])`** → Loads the image file.  
-- **`cvNamedWindow()`** → Creates a resizable window.  
-- **`cvShowImage()`** → Displays the image.  
-- **`cvWaitKey(0)`** → Waits indefinitely until a key is pressed.  
-- **`cvReleaseImage()`** → Frees image memory to prevent leaks.  
-- **`cvDestroyWindow()`** → Closes the window properly.  
+- **`cv::imread(argv[1])`** → Loads the image file.  
+- **`cv::namedWindow()`** → Creates a resizable window.  
+- **`cv::imshow()`** → Displays the image.  
+- **`cv::waitKey(0)`** → Waits indefinitely until a key is pressed.  
+- **`cv::destroyWindow()`** → Closes the window properly.  
 
-**💡 Memory Trick:** Think of **"LNWSR-D"** → **L**oad, **N**ame, **W**ait, **S**how, **R**elease, **D**estroy  
+**💡 Memory Trick:** Think of **"LNWD"** → **L**oad, **N**ame, **W**ait, **D**estroy  
 
 ---
 
@@ -58,33 +66,42 @@ int main(int argc, char** argv) {
 ### **Goal:** Load and display a video file frame-by-frame.  
 
 ```cpp
-#include "cv.h"
-#include "highgui.h"
+#include <opencv2/opencv.hpp>
+#include <iostream>
 
 int main(int argc, char** argv) {
-    CvCapture* capture = cvCreateFileCapture(argv[1]);  // Load video
-    IplImage* frame;
-
-    while ((frame = cvQueryFrame(capture)) != NULL) {
-        cvShowImage("Video Example", frame);
-        if (cvWaitKey(33) >= 0) break;  // 30 FPS delay (33ms)
+    if (argc != 2) {
+        std::cout << "Usage: ./play_video <video_path>\n";
+        return -1;
     }
 
-    cvReleaseCapture(&capture);
-    cvDestroyWindow("Video Example");
+    cv::VideoCapture capture(argv[1]);  // Load video
+    if (!capture.isOpened()) {
+        std::cout << "Could not open the video file!\n";
+        return -1;
+    }
+
+    cv::Mat frame;
+    while (capture.read(frame)) {
+        cv::imshow("Video Example", frame);
+        if (cv::waitKey(33) >= 0) break;  // 30 FPS delay (33ms)
+    }
+
+    capture.release();
+    cv::destroyWindow("Video Example");
     return 0;
 }
 ```
 
 ### **Breakdown of the Code:**  
-- **`cvCreateFileCapture(argv[1])`** → Opens the video file.  
-- **`cvQueryFrame()`** → Reads each frame one by one.  
-- **`cvShowImage()`** → Displays the current frame.  
-- **`cvWaitKey(33)`** → Waits 33ms per frame (~30 FPS).  
-- **`cvReleaseCapture()`** → Releases memory after finishing.  
-- **`cvDestroyWindow()`** → Closes the window properly.  
+- **`cv::VideoCapture(argv[1])`** → Opens the video file.  
+- **`capture.read(frame)`** → Reads each frame one by one.  
+- **`cv::imshow()`** → Displays the current frame.  
+- **`cv::waitKey(33)`** → Waits 33ms per frame (~30 FPS).  
+- **`capture.release()`** → Releases memory after finishing.  
+- **`cv::destroyWindow()`** → Closes the window properly.  
 
-**💡 Trick to Remember:** **"QVD-RD"** → **Q**uery frame, **V**iew, **D**elay, **R**elease, **D**estroy  
+**💡 Trick to Remember:** **"RVWD"** → **R**ead frame, **V**iew, **W**ait, **D**estroy  
 
 ---
 
@@ -92,26 +109,23 @@ int main(int argc, char** argv) {
 ### **Goal:** Access and modify individual pixels.  
 
 ```cpp
-uchar* ptr = (uchar*) (img->imageData + y * img->widthStep);
-uchar pixel_value = ptr[x * img->nChannels + channel];
+cv::Vec3b& pixel = img.at<cv::Vec3b>(y, x);
+uchar blue = pixel[0];
+uchar green = pixel[1];
+uchar red = pixel[2];
 ```
 
 ### **Key Points:**  
-- **Each image is stored as a 1D array in memory.**  
-- **`widthStep`** → Bytes per row (important for accessing pixels).  
-- **`nChannels`** → Number of color channels (1 for grayscale, 3 for RGB).  
-- **`imageData`** → The actual pixel data.  
+- **`cv::Vec3b`** → Represents a 3-channel pixel (BGR format).  
+- **`img.at<cv::Vec3b>(y, x)`** → Accesses the pixel at (x, y).  
 
 #### **Example – Convert to Grayscale:**  
 ```cpp
-for (int y = 0; y < img->height; y++) {
-    for (int x = 0; x < img->width; x++) {
-        uchar* ptr = (uchar*)(img->imageData + y * img->widthStep);
-        uchar blue = ptr[x * 3 + 0];
-        uchar green = ptr[x * 3 + 1];
-        uchar red = ptr[x * 3 + 2];
-        uchar gray = (red + green + blue) / 3;
-        ptr[x * 3 + 0] = ptr[x * 3 + 1] = ptr[x * 3 + 2] = gray;
+for (int y = 0; y < img.rows; y++) {
+    for (int x = 0; x < img.cols; x++) {
+        cv::Vec3b& pixel = img.at<cv::Vec3b>(y, x);
+        uchar gray = (pixel[0] + pixel[1] + pixel[2]) / 3;
+        pixel[0] = pixel[1] = pixel[2] = gray;
     }
 }
 ```
@@ -120,7 +134,8 @@ for (int y = 0; y < img->height; y++) {
 
 ## **5. Simple Image Transformation – Flip Image**  
 ```cpp
-cvFlip(img, NULL, 1); // 1 = Flip horizontally, 0 = Flip vertically
+cv::Mat flipped;
+cv::flip(img, flipped, 1); // 1 = Flip horizontally, 0 = Flip vertically
 ```
 - **1 = Left to Right flip**
 - **0 = Top to Bottom flip**
@@ -130,17 +145,16 @@ cvFlip(img, NULL, 1); // 1 = Flip horizontally, 0 = Flip vertically
 
 ## **6. Capturing Video from a Camera**  
 ```cpp
-CvCapture* capture = cvCreateCameraCapture(0);  // 0 for default camera
+cv::VideoCapture capture(0);  // 0 for default camera
 ```
 - Uses the same logic as the video playback program.
-- **Replace `cvCreateFileCapture()` with `cvCreateCameraCapture()`**.
+- **Replace `cv::VideoCapture(argv[1])` with `cv::VideoCapture(0)`**.
 
 ---
 
 ## **7. Writing Video to an AVI File**  
 ```cpp
-CvVideoWriter* writer = cvCreateVideoWriter("output.avi",
-                CV_FOURCC('M','J','P','G'), 30, cvSize(width, height));
+cv::VideoWriter writer("output.avi", cv::VideoWriter::fourcc('M','J','P','G'), 30, cv::Size(width, height));
 ```
 - **MJPG codec** is commonly used for AVI files.
 - **30 FPS** for smooth playback.
@@ -160,9 +174,9 @@ CvVideoWriter* writer = cvCreateVideoWriter("output.avi",
 
 | **Concept**         | **Memory Trick** |
 |---------------------|-----------------|
-| **Basic Program Flow** | **LNWSR-D** (Load, Name, Wait, Show, Release, Destroy) |
-| **Video Playback**  | **QVD-RD** (Query, View, Delay, Release, Destroy) |
-| **Image Memory**    | **WiNC** (WidthStep, nChannels) |
+| **Basic Program Flow** | **LNWD** (Load, Name, Wait, Destroy) |
+| **Video Playback**  | **RVWD** (Read, View, Wait, Destroy) |
+| **Image Memory**    | **Vec3B** (BGR pixel access) |
 | **Flipping Images** | **1 = Left-Right, 0 = Top-Bottom, -1 = Both** |
 
 ---
@@ -173,3 +187,12 @@ Chapter 2 introduces **basic OpenCV programming**—reading images, handling vid
 ✔ How to **play and capture video**.  
 ✔ How to **access and manipulate pixels**.  
 ✔ How to **flip images and apply transformations**.  
+
+---
+
+### **Additional Resources**  
+- [OpenCV Documentation](https://docs.opencv.org)  
+- [OpenCV GitHub Repository](https://github.com/opencv/opencv)  
+- [OpenCV Python Tutorials](https://docs.opencv.org/master/d6/d00/tutorial_py_root.html)  
+
+---
