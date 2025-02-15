@@ -1,3 +1,5 @@
+---
+
 ### **Chapter 3: Getting to Know OpenCV**  
 
 This chapter focuses on **OpenCV's core data structures**, including **matrices, images, and drawing functions**. Understanding these structures is essential for performing image processing, feature detection, and computer vision tasks efficiently.  
@@ -11,61 +13,66 @@ OpenCV defines several **core data structures** that are essential for image pro
 
 | **Structure**  | **Purpose**  |
 |--------------|------------|
-| **CvMat**    | Represents a matrix (for numerical operations).  |
-| **IplImage** | Represents an image (from Intel’s IPL library).  |
-| **CvArr**    | Generic array type (can be a matrix or image).  |
+| **cv::Mat**  | Represents a matrix or image (used for numerical and image operations).  |
+| **cv::Point** | Represents a 2D point (x, y).  |
+| **cv::Scalar** | Represents a 4-element vector (used for colors).  |
 
-**💡 Memory Trick:** **"MIA" → Matrices (CvMat), Images (IplImage), Arrays (CvArr)**  
+**💡 Memory Trick:** **"MPS" → Matrices (cv::Mat), Points (cv::Point), Scalars (cv::Scalar)**  
 
 ---
 
-## **2. CvMat: Matrix Representation in OpenCV**  
-A `CvMat` is a **multi-dimensional array**, useful for mathematical operations like transformations, filters, and feature detection.  
+## **2. cv::Mat: Matrix Representation in OpenCV**  
+A `cv::Mat` is a **multi-dimensional array**, useful for mathematical operations like transformations, filters, and feature detection.  
 
 ### **Creating a Matrix:**
 ```cpp
-CvMat* mat = cvCreateMat(3, 3, CV_32FC1); // 3x3 floating point matrix
+cv::Mat mat(3, 3, CV_32FC1); // 3x3 floating point matrix
 ```
 
-### **Accessing Elements in CvMat:**  
+### **Accessing Elements in cv::Mat:**  
 ```cpp
-cvSetReal2D(mat, 0, 0, 10.0); // Set value at row=0, col=0
-double value = cvGetReal2D(mat, 0, 0); // Get value from row=0, col=0
+mat.at<float>(0, 0) = 10.0; // Set value at row=0, col=0
+float value = mat.at<float>(0, 0); // Get value from row=0, col=0
 ```
 
-### **Destroying a Matrix:**  
+### **Displaying a Matrix:**
 ```cpp
-cvReleaseMat(&mat);
+std::cout << "Matrix: " << mat << std::endl;
 ```
 
 ---
 
-## **3. IplImage: Handling Images in OpenCV**  
-An `IplImage` is the primary image structure in OpenCV.  
+## **3. Handling Images with cv::Mat**  
+A `cv::Mat` is the primary image structure in OpenCV.  
 
 ### **Loading and Displaying an Image:**  
 ```cpp
-IplImage* img = cvLoadImage("image.jpg");
-cvShowImage("Display", img);
-cvWaitKey(0);
-cvReleaseImage(&img);
-cvDestroyWindow("Display");
+cv::Mat img = cv::imread("image.jpg");
+if (img.empty()) {
+    std::cout << "Could not open or find the image!\n";
+    return -1;
+}
+
+cv::imshow("Display", img);
+cv::waitKey(0);
 ```
 
-### **Understanding IplImage Components:**  
+### **Understanding cv::Mat Components:**  
 
 | **Field**         | **Description**  |
 |------------------|----------------|
-| `width`         | Image width in pixels  |
-| `height`        | Image height in pixels  |
-| `nChannels`     | Number of color channels (1 for grayscale, 3 for RGB)  |
-| `depth`         | Pixel depth (8-bit, 16-bit, or 32-bit)  |
-| `imageData`     | Pointer to raw pixel data  |
+| `rows`           | Image height in pixels  |
+| `cols`           | Image width in pixels  |
+| `channels()`     | Number of color channels (1 for grayscale, 3 for RGB)  |
+| `depth()`        | Pixel depth (8-bit, 16-bit, or 32-bit)  |
+| `data`           | Pointer to raw pixel data  |
 
 ### **Accessing Pixels in an Image:**  
 ```cpp
-uchar* ptr = (uchar*) (img->imageData + y * img->widthStep);
-uchar pixel_value = ptr[x * img->nChannels + 0];  // Get blue channel value
+cv::Vec3b& pixel = img.at<cv::Vec3b>(y, x);
+uchar blue = pixel[0];  // Get blue channel value
+uchar green = pixel[1]; // Get green channel value
+uchar red = pixel[2];   // Get red channel value
 ```
 
 ---
@@ -74,17 +81,18 @@ uchar pixel_value = ptr[x * img->nChannels + 0];  // Get blue channel value
 
 ### **Basic Mathematical Operations on Matrices:**  
 ```cpp
-cvAdd(mat1, mat2, result);  // Addition
-cvSub(mat1, mat2, result);  // Subtraction
-cvMul(mat1, mat2, result);  // Multiplication
-cvDiv(mat1, mat2, result);  // Division
+cv::Mat result = mat1 + mat2;  // Addition
+result = mat1 - mat2;          // Subtraction
+result = mat1 * mat2;          // Multiplication
+result = mat1 / mat2;          // Division
 ```
 
 ### **Basic Image Processing Functions:**  
 ```cpp
-cvConvertScale(image, output, 1.2, 0);  // Scale pixel values
-cvAbsDiff(image1, image2, diff);  // Absolute difference
-cvThreshold(image, output, 128, 255, CV_THRESH_BINARY);  // Convert to binary
+cv::Mat output;
+cv::convertScaleAbs(image, output, 1.2, 0);  // Scale pixel values
+cv::absdiff(image1, image2, diff);           // Absolute difference
+cv::threshold(image, output, 128, 255, cv::THRESH_BINARY);  // Convert to binary
 ```
 
 **💡 Memory Trick:** **"ASMD" → Add, Subtract, Multiply, Divide**  
@@ -95,22 +103,22 @@ cvThreshold(image, output, 128, 255, CV_THRESH_BINARY);  // Convert to binary
 
 ### **Drawing a Line:**  
 ```cpp
-cvLine(image, cvPoint(10,10), cvPoint(100,100), CV_RGB(255,0,0), 2);
+cv::line(image, cv::Point(10,10), cv::Point(100,100), cv::Scalar(255,0,0), 2);
 ```
 
 ### **Drawing a Rectangle:**  
 ```cpp
-cvRectangle(image, cvPoint(50,50), cvPoint(150,150), CV_RGB(0,255,0), 2);
+cv::rectangle(image, cv::Point(50,50), cv::Point(150,150), cv::Scalar(0,255,0), 2);
 ```
 
 ### **Drawing a Circle:**  
 ```cpp
-cvCircle(image, cvPoint(100,100), 50, CV_RGB(0,0,255), 2);
+cv::circle(image, cv::Point(100,100), 50, cv::Scalar(0,0,255), 2);
 ```
 
 ### **Drawing Text:**  
 ```cpp
-cvPutText(image, "OpenCV", cvPoint(50,50), &font, CV_RGB(255,255,255));
+cv::putText(image, "OpenCV", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255,255,255), 2);
 ```
 
 **💡 Memory Trick:** **"LRC-T" → Line, Rectangle, Circle, Text**  
@@ -122,17 +130,21 @@ OpenCV allows saving and loading images, matrices, and parameters.
 
 ### **Saving an Image:**  
 ```cpp
-cvSaveImage("output.jpg", img);
+cv::imwrite("output.jpg", img);
 ```
 
 ### **Saving a Matrix to a File:**  
 ```cpp
-cvSave("matrix.xml", mat);
+cv::FileStorage fs("matrix.xml", cv::FileStorage::WRITE);
+fs << "mat" << mat;
+fs.release();
 ```
 
 ### **Loading a Saved Matrix:**  
 ```cpp
-CvMat* loadedMat = (CvMat*)cvLoad("matrix.xml");
+cv::FileStorage fs("matrix.xml", cv::FileStorage::READ);
+fs["mat"] >> loadedMat;
+fs.release();
 ```
 
 ---
@@ -166,7 +178,7 @@ export LD_LIBRARY_PATH=/opt/intel/ipp/lib/intel64:$LD_LIBRARY_PATH
 
 | **Concept**             | **Memory Trick** |
 |-------------------------|-----------------|
-| **Data Types** | **"MIA" → Matrices (CvMat), Images (IplImage), Arrays (CvArr)** |
+| **Data Types** | **"MPS" → Matrices (cv::Mat), Points (cv::Point), Scalars (cv::Scalar)** |
 | **Basic Math** | **"ASMD" → Add, Subtract, Multiply, Divide** |
 | **Drawing Shapes** | **"LRC-T" → Line, Rectangle, Circle, Text** |
 | **Matrix Access** | **"RGS" → Row, Get, Set** |
@@ -178,11 +190,18 @@ export LD_LIBRARY_PATH=/opt/intel/ipp/lib/intel64:$LD_LIBRARY_PATH
 Chapter 3 provides a strong foundation for understanding **how OpenCV handles images and matrices**, as well as **basic drawing functions and optimizations**.  
 
 ### **What You Learned:**  
-✔ **OpenCV's core data structures (`CvMat`, `IplImage`)**  
+✔ **OpenCV's core data structures (`cv::Mat`, `cv::Point`, `cv::Scalar`)**  
 ✔ **How to access and manipulate image pixels**  
 ✔ **Performing basic mathematical operations on images**  
 ✔ **Drawing shapes and text using OpenCV**  
 ✔ **Saving and loading images, matrices, and parameters**  
 ✔ **How to optimize OpenCV using Intel’s IPP**  
+
+---
+
+### **Additional Resources**  
+- [OpenCV Documentation](https://docs.opencv.org)  
+- [OpenCV GitHub Repository](https://github.com/opencv/opencv)  
+- [OpenCV C++ Tutorials](https://docs.opencv.org/master/d9/df8/tutorial_root.html)  
 
 ---
