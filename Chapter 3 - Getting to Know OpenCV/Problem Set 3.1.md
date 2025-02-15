@@ -1,221 +1,227 @@
+Let's go through the **coding exercises** one by one, and I'll provide **solutions** for each.
+
 ---
 
-## **1. Create a 5x5 matrix and initialize it with values from 1 to 25.**  
-### **Corrections and Improvements:**
-- The original code is mostly correct, but it's better to initialize the matrix with the correct type and use `CV_32S` for consistency.  
-- Improved readability by enhancing the output format.
+## **1. Create a 5x5 matrix and initialize it with values from 1 to 25.**
+### **Expected Output:**
+```
+1  2  3  4  5  
+6  7  8  9 10  
+11 12 13 14 15  
+16 17 18 19 20  
+21 22 23 24 25  
+```
 
-### **Code:**
+### **Solution:**
 ```cpp
-#include <opencv2/opencv.hpp>
+#include "cv.h"
+#include "highgui.h"
 #include <iostream>
 
 int main() {
-    // Create a 5x5 matrix of integers
-    cv::Mat mat(5, 5, CV_32S);
+    CvMat* mat = cvCreateMat(5, 5, CV_32SC1);  // 5x5 Integer matrix
     int value = 1;
 
     // Fill the matrix
-    for (int i = 0; i < mat.rows; i++) {
-        for (int j = 0; j < mat.cols; j++) {
-            mat.at<int>(i, j) = value++;
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            cvSetReal2D(mat, i, j, value++);
         }
     }
 
-    // Display the matrix in a formatted way
-    std::cout << "Matrix:" << std::endl;
-    for (int i = 0; i < mat.rows; i++) {
-        for (int j = 0; j < mat.cols; j++) {
-            std::cout << mat.at<int>(i, j) << "\t";
+    // Display the matrix
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            std::cout << cvGetReal2D(mat, i, j) << "\t";
         }
         std::cout << std::endl;
     }
 
+    cvReleaseMat(&mat);
     return 0;
 }
 ```
 
 ---
 
-## **2. Load an image, convert it to grayscale, and save the output.**  
-### **Corrections and Improvements:**
-- Added error handling for image saving.
-- Used `cv::IMREAD_COLOR` for clarity when loading the image.
-
-### **Code:**
+## **2. Load an image, convert it to grayscale, and save the output.**
+### **Solution:**
 ```cpp
-#include <opencv2/opencv.hpp>
-#include <iostream>
-
-int main() {
-    // Load the image in color mode
-    cv::Mat img = cv::imread("input.jpg", cv::IMREAD_COLOR);
-    if (img.empty()) {
-        std::cerr << "Error: Could not load image!" << std::endl;
-        return -1;
-    }
-
-    // Convert to grayscale
-    cv::Mat gray;
-    cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-
-    // Save grayscale image
-    if (!cv::imwrite("grayscale_output.jpg", gray)) {
-        std::cerr << "Error: Could not save grayscale image!" << std::endl;
-        return -1;
-    }
-
-    // Display images
-    cv::imshow("Original Image", img);
-    cv::imshow("Grayscale Image", gray);
-    cv::waitKey(0);
-
-    return 0;
-}
-```
-
----
-
-## **3. Modify an image by drawing a red rectangle around a detected object.**  
-### **Corrections and Improvements:**
-- Enhanced error handling.
-- Added comments for clarity.
-
-### **Code:**
-```cpp
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include "cv.h"
+#include "highgui.h"
 
 int main() {
     // Load the image
-    cv::Mat img = cv::imread("input.jpg", cv::IMREAD_COLOR);
-    if (img.empty()) {
-        std::cerr << "Error: Could not load image!" << std::endl;
+    IplImage* img = cvLoadImage("input.jpg", CV_LOAD_IMAGE_COLOR);
+    if (!img) {
+        printf("Error: Could not load image\n");
+        return -1;
+    }
+
+    // Create grayscale image
+    IplImage* gray = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+    cvCvtColor(img, gray, CV_BGR2GRAY);
+
+    // Save grayscale image
+    cvSaveImage("grayscale_output.jpg", gray);
+
+    // Display images
+    cvShowImage("Original Image", img);
+    cvShowImage("Grayscale Image", gray);
+
+    cvWaitKey(0);
+
+    // Cleanup
+    cvReleaseImage(&img);
+    cvReleaseImage(&gray);
+    cvDestroyAllWindows();
+    return 0;
+}
+```
+
+---
+
+## **3. Modify an image by drawing a red rectangle around a detected object.**
+### **Solution:**
+```cpp
+#include "cv.h"
+#include "highgui.h"
+
+int main() {
+    IplImage* img = cvLoadImage("input.jpg", CV_LOAD_IMAGE_COLOR);
+    if (!img) {
+        printf("Error: Could not load image\n");
         return -1;
     }
 
     // Define rectangle coordinates
-    cv::Point pt1(50, 50);   // Top-left corner
-    cv::Point pt2(200, 200); // Bottom-right corner
+    CvPoint pt1 = cvPoint(50, 50);  // Top-left corner
+    CvPoint pt2 = cvPoint(200, 200); // Bottom-right corner
 
     // Draw rectangle (Red color, thickness 2)
-    cv::rectangle(img, pt1, pt2, cv::Scalar(0, 0, 255), 2);
+    cvRectangle(img, pt1, pt2, CV_RGB(255, 0, 0), 2);
 
     // Show and save the modified image
-    cv::imshow("Modified Image", img);
+    cvShowImage("Modified Image", img);
+    cvSaveImage("output_with_rectangle.jpg", img);
 
-    if (!cv::imwrite("output_with_rectangle.jpg", img)) {
-        std::cerr << "Error: Could not save the modified image!" << std::endl;
-        return -1;
-    }
+    cvWaitKey(0);
 
-    cv::waitKey(0);
-
+    cvReleaseImage(&img);
+    cvDestroyAllWindows();
     return 0;
 }
 ```
 
 ---
 
-## **4. Generate a random image and save it as a PNG file.**  
-### **Corrections and Improvements:**
-- Used `cv::RNG` for random number generation, which is more suitable in OpenCV.
-- Improved performance by avoiding multiple calls to `rand()`.
-
-### **Code:**
+## **4. Generate a random image and save it as a PNG file.**
+### **Solution:**
 ```cpp
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include "cv.h"
+#include "highgui.h"
+#include <cstdlib>
+#include <ctime>
 
 int main() {
     int width = 256, height = 256;
-    cv::Mat img(height, width, CV_8UC3);  // 3-channel image
+    IplImage* img = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
-    // Using OpenCV RNG
-    cv::RNG rng(cv::getTickCount());
+    srand(time(0));  // Seed random generator
 
     for (int y = 0; y < height; y++) {
+        uchar* row = (uchar*)(img->imageData + y * img->widthStep);
         for (int x = 0; x < width; x++) {
-            img.at<cv::Vec3b>(y, x) = cv::Vec3b(
-                rng.uniform(0, 256),  // Blue
-                rng.uniform(0, 256),  // Green
-                rng.uniform(0, 256)   // Red
-            );
+            row[x * 3 + 0] = rand() % 256;  // Blue
+            row[x * 3 + 1] = rand() % 256;  // Green
+            row[x * 3 + 2] = rand() % 256;  // Red
         }
     }
 
-    // Save the random image
-    if (!cv::imwrite("random_image.png", img)) {
-        std::cerr << "Error: Could not save random image!" << std::endl;
-        return -1;
-    }
+    cvSaveImage("random_image.png", img);
 
-    // Display the image
-    cv::imshow("Random Image", img);
-    cv::waitKey(0);
+    cvShowImage("Random Image", img);
+    cvWaitKey(0);
 
+    cvReleaseImage(&img);
+    cvDestroyAllWindows();
     return 0;
 }
 ```
 
 ---
 
-## **5. Add noise to an image and then remove it using filtering.**  
-### **Corrections and Improvements:**
-- Optimized noise addition by using `cv::randn()` for Gaussian noise.
-- Made the filtering step more efficient.
-
-### **Code:**
+## **5. Add noise to an image and then remove it using filtering.**
+### **Solution:**
 ```cpp
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include "cv.h"
+#include "highgui.h"
+#include <cstdlib>
+#include <ctime>
 
 // Function to add noise to an image
-void addNoise(cv::Mat& img) {
-    cv::Mat noise(img.size(), img.type());
-    cv::randn(noise, 0, 25);  // Gaussian noise with mean 0 and stddev 25
-    img += noise;
+void addNoise(IplImage* img) {
+    srand(time(0));
+    for (int y = 0; y < img->height; y++) {
+        uchar* row = (uchar*)(img->imageData + y * img->widthStep);
+        for (int x = 0; x < img->width; x++) {
+            int noise = rand() % 50 - 25; // Random noise between -25 to 25
+            for (int c = 0; c < img->nChannels; c++) {
+                int newValue = row[x * img->nChannels + c] + noise;
+                row[x * img->nChannels + c] = (uchar)cv::saturate_cast<uchar>(newValue);
+            }
+        }
+    }
 }
 
 int main() {
-    // Load the image
-    cv::Mat img = cv::imread("input.jpg", cv::IMREAD_COLOR);
-    if (img.empty()) {
-        std::cerr << "Error: Could not load image!" << std::endl;
+    IplImage* img = cvLoadImage("input.jpg", CV_LOAD_IMAGE_COLOR);
+    if (!img) {
+        printf("Error: Could not load image\n");
         return -1;
     }
 
     // Create noisy image
-    cv::Mat noisyImg = img.clone();
+    IplImage* noisyImg = cvCloneImage(img);
     addNoise(noisyImg);
 
-    // Filter the noisy image
-    cv::Mat filteredImg;
-    cv::GaussianBlur(noisyImg, filteredImg, cv::Size(5, 5), 0);
+    // Create a filtered image
+    IplImage* filteredImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+    cvSmooth(noisyImg, filteredImg, CV_GAUSSIAN, 5, 5);
 
     // Save images
-    if (!cv::imwrite("noisy_image.jpg", noisyImg) || 
-        !cv::imwrite("filtered_image.jpg", filteredImg)) {
-        std::cerr << "Error: Could not save images!" << std::endl;
-        return -1;
-    }
+    cvSaveImage("noisy_image.jpg", noisyImg);
+    cvSaveImage("filtered_image.jpg", filteredImg);
 
     // Show images
-    cv::imshow("Original Image", img);
-    cv::imshow("Noisy Image", noisyImg);
-    cv::imshow("Filtered Image", filteredImg);
+    cvShowImage("Original Image", img);
+    cvShowImage("Noisy Image", noisyImg);
+    cvShowImage("Filtered Image", filteredImg);
 
-    cv::waitKey(0);
+    cvWaitKey(0);
 
+    // Cleanup
+    cvReleaseImage(&img);
+    cvReleaseImage(&noisyImg);
+    cvReleaseImage(&filteredImg);
+    cvDestroyAllWindows();
     return 0;
 }
 ```
 
 ---
 
-### **Summary of Corrections:**
-- Improved error handling for image loading and saving.
-- Used `cv::RNG` for random number generation for better performance.
-- Optimized noise addition using `cv::randn()` for Gaussian noise.
-- Enhanced readability and maintainability of the code.
-- Consistency in OpenCV function usage and parameter choices.
+### **📌 Summary of What You Practiced:**
+✔ **Create and manipulate matrices (`CvMat`).**  
+✔ **Load, modify, and save images (`IplImage`).**  
+✔ **Perform basic image processing (grayscale conversion, noise addition, filtering).**  
+✔ **Draw shapes (rectangles) on images.**  
+✔ **Generate and save random images.**  
+
+---
+
+## **Next Steps**
+Try experimenting with these programs by:  
+1. **Changing parameters** (e.g., different filter sizes, noise levels).  
+2. **Combining multiple effects** (e.g., noise + grayscale + edge detection).  
+3. **Loading images from a webcam instead of files.**  
