@@ -40,6 +40,8 @@ float value = mat.at<float>(0, 0); // Get value from row=0, col=0
 std::cout << "Matrix: " << mat << std::endl;
 ```
 
+**💡 Tip:** Use `cv::Mat::type()` to check the matrix type (e.g., `CV_8UC3` for 8-bit 3-channel images).  
+
 ---
 
 ## **3. Handling Images with cv::Mat**  
@@ -54,8 +56,10 @@ if (img.empty()) {
 }
 
 cv::imshow("Display", img);
-cv::waitKey(0);
+cv::waitKey(0); // Wait for a key press to close the window
 ```
+
+**💡 Tip:** Always check if the image is loaded successfully using `img.empty()`.  
 
 ### **Understanding cv::Mat Components:**  
 
@@ -69,11 +73,13 @@ cv::waitKey(0);
 
 ### **Accessing Pixels in an Image:**  
 ```cpp
-cv::Vec3b& pixel = img.at<cv::Vec3b>(y, x);
+cv::Vec3b& pixel = img.at<cv::Vec3b>(y, x); // For 8-bit 3-channel images
 uchar blue = pixel[0];  // Get blue channel value
 uchar green = pixel[1]; // Get green channel value
 uchar red = pixel[2];   // Get red channel value
 ```
+
+**💡 Trick:** Use `cv::Mat::ptr<Type>(row)` for faster pixel access in loops.  
 
 ---
 
@@ -85,6 +91,11 @@ cv::Mat result = mat1 + mat2;  // Addition
 result = mat1 - mat2;          // Subtraction
 result = mat1 * mat2;          // Multiplication
 result = mat1 / mat2;          // Division
+```
+
+**💡 Tip:** Use `cv::addWeighted()` for blending two images:  
+```cpp
+cv::addWeighted(img1, 0.7, img2, 0.3, 0, result); // Blend images
 ```
 
 ### **Basic Image Processing Functions:**  
@@ -146,6 +157,8 @@ cv::FileStorage fs("matrix.xml", cv::FileStorage::READ);
 fs["mat"] >> loadedMat;
 fs.release();
 ```
+
+**💡 Tip:** Use `cv::FileStorage` to save and load custom data like camera calibration parameters.  
 
 ---
 
