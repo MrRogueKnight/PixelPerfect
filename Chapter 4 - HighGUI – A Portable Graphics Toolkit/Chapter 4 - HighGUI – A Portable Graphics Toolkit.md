@@ -1,3 +1,5 @@
+---
+
 ### **Chapter 4: HighGUI – A Portable Graphics Toolkit**  
 
 This chapter focuses on **HighGUI**, which is OpenCV’s module for handling **image display, video capture, and GUI elements** (such as windows, trackbars, and mouse interactions). Mastering HighGUI is essential for **visualizing OpenCV processing results** and **interacting with the user**.
@@ -42,6 +44,8 @@ int main() {
 }
 ```
 
+**💡 Tip:** Use `cv::namedWindow()` in C++ for better compatibility with modern OpenCV.  
+
 ---
 
 ## **3. Loading and Displaying an Image**  
@@ -80,6 +84,8 @@ int main() {
     return 0;
 }
 ```
+
+**💡 Tip:** Use `cv::imread()` and `cv::imshow()` in C++ for better readability and modern OpenCV practices.  
 
 ---
 
@@ -123,6 +129,8 @@ int main() {
 }
 ```
 
+**💡 Tip:** Use `cv::VideoCapture` in C++ for better video handling.  
+
 ---
 
 ## **5. Capturing Video from a Camera**  
@@ -158,6 +166,8 @@ int main() {
     return 0;
 }
 ```
+
+**💡 Tip:** Use `cv::VideoCapture` in C++ for better camera handling.  
 
 ---
 
@@ -208,6 +218,8 @@ int main() {
 }
 ```
 
+**💡 Tip:** Use `cv::VideoWriter` in C++ for better video writing.  
+
 ---
 
 ## **7. Creating Trackbars (Sliders) in OpenCV**  
@@ -250,6 +262,8 @@ int main() {
 }
 ```
 
+**💡 Tip:** Use `cv::createTrackbar()` in C++ for better trackbar handling.  
+
 ---
 
 ## **8. Exercises**
@@ -266,3 +280,5 @@ int main() {
 ✔ Captured **real-time video**.  
 ✔ Created **trackbars for user interaction**.  
 ✔ Saved **videos to files**.  
+
+---
